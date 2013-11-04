@@ -1,0 +1,69 @@
+#!/bin/bash
+JENKINS_HOME=`dirname $0`
+if [ ! -z "<%= envfile %>" -a -x "<%= envfile %>" ]
+then
+  source <%= envfile %>
+fi
+JENKINS_CONF=${JENKINS_HOME}/Library/Preferences/org.jenkins-ci.slave.jnlp.conf
+JENKINS_SLAVE=`hostname -s | tr '[:upper:]' '[:lower:]'`
+JENKINS_MASTER=<%= masterurl %>
+JENKINS_USER=<%= jenkins_user %>
+JENKINS_TOKEN=''
+UI_USER_FLAG='<%= ui_user_flag %>'
+UI_PASS_FLAG='<%= ui_pass_flag %>'
+EXECUTORS_FLAG='<%= executors_flag %>'
+MODE_FLAG='<%= mode_flag %>'
+JAVA_ARGS='-Djava.awt.headless=true'
+JAVA_ARGS_LOG=''
+JAVA_TRUSTSTORE=${JENKINS_HOME}/.keystore
+JAVA_TRUSTSTORE_PASS=''
+LABELS_FLAG='<%= labels_flag %>'
+# called when unloaded by launchctl
+function unload() {
+PID=`cat ${JENKINS_HOME}/.slave.pid`
+  if [ "$PID" != "" ]; then
+    kill $PID
+    wait $PID
+  fi
+  echo
+  echo "Stopping at `date`"
+  echo
+  exit 0
+}
+
+# launchctl sends SIGTERM to unload a daemon
+# trap SIGTERM to be able to gracefully cleanup
+trap "unload" HUP INT TERM
+
+if [ -f ${JENKINS_CONF} ]; then
+  chmod 400 ${JENKINS_CONF}
+  source ${JENKINS_CONF}
+fi
+
+
+echo
+echo "Starting at `date`"
+echo
+
+echo "Launching slave process at ${JENKINS_JNLP_URL}"
+RESULT=-1
+# If we use a trustStore for the Jenkins Master certificates, we need to pass it
+# and its password to the java process that runs the slave. The password is stored
+# in the OS X Keychain that we use for other purposes.
+# TODO: ssl support, please!
+#if [[ -f $JAVA_TRUSTSTORE ]]; then
+#  JAVA_TRUSTSTORE_PASS=$( ${JENKINS_HOME}/security.sh get-password --account=`whoami` --service=java_truststore )
+#  JAVA_ARGS_LOG="${JAVA_ARGS} -Djavax.net.ssl.trustStore=${JAVA_TRUSTSTORE} -Djavax.net.ssl.trustStorePassword=********"
+#  JAVA_ARGS="${JAVA_ARGS} -Djavax.net.ssl.trustStore=${JAVA_TRUSTSTORE} -Djavax.net.ssl.trustStorePassword=${JAVA_TRUSTSTORE_PASS}" 
+#fi
+# Not supported in swarm?
+# The user and API token are required for Jenkins >= 1.498
+#if [ ! -z ${JENKINS_USER} ]; then
+#  JENKINS_TOKEN=$( ${JENKINS_HOME}/security.sh get-password --account=${JENKINS_USER} --service=${JENKINS_SLAVE} )
+#  JENKINS_USER="-jnlpCredentials ${JENKINS_USER}:"
+#fi
+echo "Calling java ${JAVA_ARGS_LOG} -jar ${JENKINS_HOME}/<%= client_jar %> -master ${JENKINS_MASTER}"
+java ${JAVA_ARGS} -jar ${JENKINS_HOME}/<%= client_jar %> -master ${JENKINS_MASTER} ${UI_USER_FLAG} ${UI_PASS_FLAG} ${EXECUTORS_FLAG} ${MODE_FLAG} &
+echo $! > ${JENKINS_HOME}/.slave.pid
+wait `cat ${JENKINS_HOME}/.slave.pid`
+unload
