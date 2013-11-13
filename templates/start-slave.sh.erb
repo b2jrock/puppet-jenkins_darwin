@@ -63,9 +63,9 @@ RESULT=-1
 #  JENKINS_USER="-jnlpCredentials ${JENKINS_USER}:"
 #fi
 echo "Calling java ${JAVA_ARGS_LOG} -jar ${JENKINS_HOME}/<%= client_jar %> -master ${JENKINS_MASTER}"
-if [ -x "${JENKINS_HOME}/slave_env.sh" ]
+if [ -x "${JENKINS_HOME}/slave-env.sh" ]
 then
-  source "${JENKINS_HOME}/slave_env.sh"
+  source "${JENKINS_HOME}/slave-env.sh"
 fi
 java ${JAVA_ARGS} -jar ${JENKINS_HOME}/<%= client_jar %> -master ${JENKINS_MASTER} ${UI_USER_FLAG} ${UI_PASS_FLAG} ${EXECUTORS_FLAG} ${MODE_FLAG} &
 echo $! > ${JENKINS_HOME}/.slave.pid
