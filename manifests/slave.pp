@@ -14,7 +14,6 @@ class jenkins_darwin::slave (
   $jenkins_home = '/var/lib/jenkins',
   $labels = undef,
   $slave_name = undef,
-  $envfile = undef,
   $log_dir = '/var/log/jenkins'
 ) {
 
