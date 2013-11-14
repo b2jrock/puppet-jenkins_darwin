@@ -1,9 +1,5 @@
 #!/bin/bash
 JENKINS_HOME=`dirname $0`
-if [ ! -z "<%= envfile %>" -a -x "<%= envfile %>" ]
-then
-  source <%= envfile %>
-fi
 JENKINS_CONF=${JENKINS_HOME}/Library/Preferences/org.jenkins-ci.slave.jnlp.conf
 JENKINS_SLAVE=`hostname -s | tr '[:upper:]' '[:lower:]'`
 JENKINS_MASTER=<%= masterurl %>
