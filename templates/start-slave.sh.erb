@@ -9,7 +9,7 @@ UI_USER_FLAG='<%= ui_user_flag %>'
 UI_PASS_FLAG='<%= ui_pass_flag %>'
 EXECUTORS_FLAG='<%= executors_flag %>'
 MODE_FLAG='<%= mode_flag %>'
-JAVA_ARGS='-Djava.awt.headless=true'
+JAVA_ARGS='-Djava.awt.headless=true -XX:MaxPermSize=256M'
 JAVA_ARGS_LOG=''
 JAVA_TRUSTSTORE=${JENKINS_HOME}/.keystore
 JAVA_TRUSTSTORE_PASS=''
